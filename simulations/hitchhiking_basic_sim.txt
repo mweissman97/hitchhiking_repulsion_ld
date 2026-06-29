@@ -1,0 +1,90 @@
+// Args: 
+// S_BEN --> selection coefficient of beneficial variant, float
+// S_DEL --> absolute value of selection coefficient of background deleterious variants, float
+// RHO_EXP --> log10 recombination rate, can be a float or an integer
+// MU_EXP --> log10 mutation rate for background delterious and neutral variants, can be a float or an integer
+// THETA --> population scaled mutation rate for focal beneficial mutation, float
+// H_DEL --> dominance coefficient for deleterious variants, float
+// FILE_PATH --> string for output file name, ie "replicate_1.1"
+
+initialize() {
+	// Default values for arguments
+	// defineConstant("S_BEN", 0.05);
+	// defineConstant("S_DEL", 0.001);
+	// defineConstant("RHO_EXP", 6);
+	// defineConstant("MU_EXP", 6);
+	// defineConstant("THETA", 0.01);
+	// defineConstant("H_DEL", 0.5);
+	// defineConstant("H_BEN", 0.5);
+	
+	defineConstant("END_FREQ", 0.5); // simulations are terminated when the focal mutation reaches a frequency of END_FREQ in the population
+	defineConstant("N", 10000); // population size
+	defineConstant("MUT_RATIO", 2.3); // for every 1 synonymous mutation there are 2.3 nonsynonymous mutations 
+	defineConstant("MU_BEN", THETA/(4*N)); // mutation rate for beneficial mutation
+	defineConstant("MU", 10^-(MU_EXP)); // mutation rate for background delterious and neutral variants
+   	defineConstant("SAMPLE", 100); // number of haplotypes pulled at the end of the simulation
+	defineConstant("RHO", 10^-(RHO_EXP)); // recombination rate
+	defineConstant("CHR_LENGTH", 10000); // size of the simulated chromosome, in bp
+	
+	// create mutation types
+	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral
+	initializeMutationType("m2", H_DEL, "f", -S_DEL);  // deleterious mutations
+	initializeMutationType("m3", H_BEN, "f", S_BEN);  // focal beneficial mutation
+	
+	// turn off mutation stacking to allow for back mutation at focal beneficial locus
+	c(m1,m3).mutationStackGroup = 1;
+	c(m1,m3).mutationStackPolicy = 'l';
+	
+	// Initialize genomic elements --> where can mutations go
+	initializeGenomicElementType("g1", c(m1, m2), c(1.0, MUT_RATIO)); // in the "g1" region, neutral and slightly deleterious mutations are possible, but adaptive mutation isn't
+	initializeGenomicElementType("g2", c(m1, m3), c(1.0, MUT_RATIO));    // focal beneficial mutation, or deleterious back mutations, are possible
+	
+	initializeGenomicElement(g1, 0, asInteger(CHR_LENGTH/2-1)); // no beneficial mutation in the first half
+	initializeGenomicElement(g2, asInteger(CHR_LENGTH/2), asInteger(CHR_LENGTH/2)); // beneficial mutation can occur in the center of the chromosome
+	initializeGenomicElement(g1, asInteger(CHR_LENGTH/2+1), CHR_LENGTH); // no beneficial mutation in the remainder
+	
+	// initialize mutation and recombination rates
+	initializeRecombinationRate(RHO);
+	initializeMutationRate(c(MU, MU_BEN, MU), c(asInteger(CHR_LENGTH/2-1), asInteger(CHR_LENGTH/2), CHR_LENGTH));	
+}
+
+// benficial mutations only happen after burn-in
+mutation(m3) {
+	return ifelse(sim.tag==1, T, F);
+}
+
+// First, run a burn in for BURN_IN=10*N generations, where no beneficial mutations occur. This makes sure the population is at an equilibrium level of diversity
+1 early()
+{
+	// initialize a tag to indicate that beneficial mutations should not be allowed 
+	sim.tag=0;
+	
+	// create population
+	sim.addSubpop("p1", N);
+}
+
+// once the burn in is complete, start introducing beneficial mutation
+100000 late() {	
+	// output files at the end of the burn-in to track whether deleterious variants are in repulsion prior to sweep (fig 3B).
+	// can comment these lines out to save space
+	sim.outputFull(filePath = paste(FILE_PATH, ".burnin.txt", sep=""));
+    p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".burnin.ms", sep=""));
+	sim.tag = 1;
+}
+
+100001:10000000 late() { 
+		m3_freq = sum(sim.mutationFrequencies(NULL, sim.mutationsOfType(m3))); // end simulations if the frequency of the adaptive variant is > END_FREQ
+		if (m3_freq > END_FREQ){
+			sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep="")); 
+			p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
+			sim.simulationFinished(); 
+			print(sim.mutationFrequencies(NULL, sim.mutationsOfType(m3)));
+		}
+}
+
+10000001 late(){ // or end simulations after 1000*N generations
+	sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep=""));
+	p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
+    sim.simulationFinished();
+    print("mutations never swept");
+}
