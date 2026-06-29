@@ -5,7 +5,7 @@
 // MU_EXP --> log10 mutation rate for background delterious and neutral variants, can be a float or an integer
 // THETA --> population scaled mutation rate for focal beneficial mutation, float
 // H_DEL --> dominance coefficient for deleterious variants, float
-// FILE_PATH --> string for output file name, ie "replicate_1.1"
+// FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
 
 initialize() {
 	// Default values for arguments
