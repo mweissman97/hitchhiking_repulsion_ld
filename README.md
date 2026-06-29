@@ -1,6 +1,7 @@
 # hitchhiking_repulsion_ld
 Code for the manuscript "The counteracting effects of hitchhiking and repulsion of deleterious alleles during a selective sweep"
 
+# File Directory
 ## simulations/
 Simulations were written using [SLiM 5](https://messerlab.org/slim/). Simulations were run on [hoffman2](https://www.hoffman2.idre.ucla.edu/About/System-overview.html), a Linux compute cluster.
 * hitchhiking_basic_sim.txt: Primary, constant Ne model that simulates a partial sweep of a single, central adaptive locus. Used to generate data for figures: 1B-E, 2A-F, 3A, S2, S3A-B, S4A-D.
