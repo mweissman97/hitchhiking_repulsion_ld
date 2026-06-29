@@ -1,65 +1,54 @@
-// Keywords: gene interactions
-// Args: S_IND, S_TOG, RHO_EXP, CHR_LENGTH, EP_DIST, FILE_PATH
+// Args: 
+// MODEL --> an integer 1-4 that corresponds to the fitness interactions of mutations in the adaptive fragment
+// NUM_SITES --> an integer that represents the number of interacting loci in the adaptive fragment. The paper uses 1 and 10.
+// FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
 
 initialize() {
-	//defineConstant("S_TOG", 0.1);
-	//defineConstant("MEAN_EP_DIST", 100);
+	defineConstant("S_TOG", 0.1); // fitness of adaptive fragment when all mutations are present
+	defineConstant("MEAN_EP_DIST", 10); // mean distance in base pairs between one mutation and the next
+	defineConstant("S_DEL", 0.001); // absolute value of selection coefficient of background deleterious variants
+	defineConstant("X0_COUNT", 5); // number of individuals that gain the adaptive fragment after the burn-in
+	//defineConstant("MODEL", 1);
 	//defineConstant("NUM_SITES", 10);
-	defineConstant("S_DEL", 0.001);
-	//defineConstant("X0_COUNT", 5);
-	//defineConstant("MODEL", "mag");
 
-	
-	if (MODEL == 1){ // magnitude
+	// MODEL determines how the fitness of each variant in the adaptive fragment is calculated when they are alone, or not part of the fragment
+	if (MODEL == 1){ // magnitude epistasis, each site is more weakly beneficial alone than in additive model
 		defineConstant("S_IND", S_TOG/NUM_SITES * 0.4); 
 		defineConstant("S_IND_1", S_TOG/NUM_SITES * 0.4); }
-	else if (MODEL == 2){ //additive
+	else if (MODEL == 2){ // additive, each site is beneficial alone proportional to the the number of sites in the fragment
 		defineConstant("S_IND", S_TOG/NUM_SITES); 
 		defineConstant("S_IND_1", S_TOG/NUM_SITES);}
-	else if (MODEL == 3){ // sign
+	else if (MODEL == 3){ // sign epistasis, each site is deleterious alone
 		defineConstant("S_IND", -S_DEL); 
 		defineConstant("S_IND_1", -S_DEL); }
-	else if (MODEL == 4){ //hitch
-		defineConstant("S_IND", -S_DEL); 
-		defineConstant("S_IND_1", S_TOG-(S_DEL*NUM_SITES)); }
+	else if (MODEL == 4){ // hitchhiking, only one mutation is adaptive and the remaining are deleterious
+		defineConstant("S_IND", -S_DEL); // all but one mutations are deleterious
+		defineConstant("S_IND_1", S_TOG-(S_DEL*NUM_SITES)); } // the centermost mutation is adaptive
 	
-	//defineConstant("CHR_LENGTH", 10000);
-	//defineConstant("N", 1000);
-	//defineConstant("THETA", 0);
+	defineConstant("CHR_LENGTH", 10000);
+	defineConstant("N", 1000);
+	defineConstant("THETA", 0);
 	
-	defineConstant("LOG_MAX_EP_DIST", log10(1000/(NUM_SITES)));
-	defineConstant("MID_EP_DIST", 10^((LOG_MAX_EP_DIST+0)/2));
-	
-	defineConstant("RHO_EXP", 6);
-	defineConstant("MUT_RATIO", 2.3);
-	defineConstant("MU_BEN", THETA/(4*N));
-	defineConstant("MU", 1e-6);
-        defineConstant("SAMPLE", 100);
-	defineConstant("RHO", 10^-(RHO_EXP));
+	defineConstant("MUT_RATIO", 2.3); // for every syonymous mutation there are 2.3 nonsynonymous mutations
+	defineConstant("MU", 1e-6); // mutation rate for background neutral and deleterious variation
+	defineConstant("MU_BEN", 0); // no back mutation at adaptive loci
+    defineConstant("SAMPLE", 100); // pull 100 random haplotypes at the end
+	defineConstant("RHO", 10^-(6)); // recombination rate
 	
 	// create mutation types
 	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral
 	initializeMutationType("m2", 0.5, "f", -S_DEL);  // deleterious mutations
-	initializeMutationType("m3", 0.5, "f", S_IND);  // epistatic mutations
-	m3.convertToSubstitution = F;
-	initializeMutationType("m4", 0.5, "f", S_IND_1);  // epistatic mutations
-	m4.convertToSubstitution = F;
-	
-	// back mutation stacking
-	c(m1,m3).mutationStackGroup = 1;
-	c(m1,m3).mutationStackPolicy = 'l';
-	c(m1,m4).mutationStackGroup = 1;
-	c(m1,m4).mutationStackPolicy = 'l';
-	
+	initializeMutationType("m3", 0.5, "f", S_IND);  // most mutations in adaptive fragment
+	initializeMutationType("m4", 0.5, "f", S_IND_1);  // centermost mutation in adaptive fragment
 
 	// Initialize genomic elements --> where can mutations go
-	initializeGenomicElementType("g1", c(m1, m2), c(1.0, MUT_RATIO)); // in the "g1" region, neutral and slightly deleterious mutations are possible, but epistasis isn't
-	initializeGenomicElementType("g2", c(m1, m3), c(1.0, MUT_RATIO));    // epistatic variants and hitchhikers
-	initializeGenomicElementType("g3", c(m1, m4), c(1.0, MUT_RATIO));    // the middle / focal epistatic variant
+	initializeGenomicElementType("g1", c(m1, m2), c(1.0, MUT_RATIO)); // in the "g1" region, neutral and slightly deleterious mutations are possible, but adaptive fragment mutations aren't
+	initializeGenomicElementType("g2", c(m3), c(1.0));    // most mutations in adaptive fragment
+	initializeGenomicElementType("g3", c(m4), c(1.0));    // the middle / focal epistatic variant
 	
 	// create genomic elements
-	end_loc = asInteger(CHR_LENGTH/2-MID_EP_DIST*NUM_SITES/2);
-	initializeGenomicElement(g1, 0, end_loc-1); // no epistasis in the first half
+	end_loc = asInteger(CHR_LENGTH/2-MEAN_EP_DIST*NUM_SITES/2); // location of the first mutation in the adaptive fragment
+	initializeGenomicElement(g1, 0, end_loc-1); // no adaptive mutations in the first half of the chromosome
 	MUT_RATE_VEC = c(MU);
 	MUT_RATE_BREAKS = c(asInteger(end_loc-1));
 	EP_LOC_VEC = c();
@@ -72,11 +61,9 @@ initialize() {
 			initializeGenomicElement(g2, end_loc, end_loc);
 			EP_LOC_VEC = c(EP_LOC_VEC, asInteger(end_loc));
 		}
-		//draw spacing from rpois
-		//SEP_SPACE = rpois(1, MEAN_EP_DIST);
-		SEP_SPACE_LOG = runif(1, 0, LOG_MAX_EP_DIST);
-		SEP_SPACE = asInteger(10^SEP_SPACE_LOG);
-                if (SEP_SPACE == 0){
+		// draw spacing between one adaptive mutation and the next from poisson distribution
+		SEP_SPACE = rpois(1, MEAN_EP_DIST);
+        if (SEP_SPACE == 0){
 			initializeGenomicElement(g1, end_loc+1, end_loc+1);
 			end_loc = end_loc+2;
 		} else {
@@ -96,7 +83,7 @@ initialize() {
 	initializeMutationRate(MUT_RATE_VEC, MUT_RATE_BREAKS);	
 }
 
-// epistatic mutations only happen after burn-in
+// sim tags ensure that adaptive mutations only happen after burn-in
 mutation(m3) {
 	return ifelse(sim.tag==1, T, F);
 }
@@ -121,7 +108,7 @@ mutation(m4) {
 100000 late() {	
 	sim.outputFull(tempdir() + "slim_" + simID + ".txt");
 	
-    // seed adaptation in a single individual
+    // seed adaptation in X0_COUNT individuals
    target = sample(p1.genomes, X0_COUNT);
    target.addNewDrawnMutation(m4, FOCAL_EP_LOC);
    if (NUM_SITES > 1){
@@ -132,9 +119,8 @@ mutation(m4) {
 
 
 100001:1000000 late() { 
-		//m4_freq = sum(sim.mutationFrequencies(NULL, sim.mutationsOfType(m4)));
 		m4_muts = sim.mutationsOfType(m4);
-		if (size(m4_muts) == 0) { //if focal mutation is lost, go back to the start of the burn-in
+		if (size(m4_muts) == 0) { // if centermost focal mutation is lost, go back to the start of the burn-in
 			sim.readFromPopulationFile(tempdir() + "slim_" + simID + ".txt");
 			setSeed(rdunif(1, 0, asInteger(2^62) - 1));
 			
@@ -146,19 +132,20 @@ mutation(m4) {
    		}
 			sim.tag = 1;
 		} else if (sum(sim.mutationFrequencies(NULL, sim.mutationsOfType(m4))) > 0.5){
+			// outputs two files that both start with FILE_PATH. One is the "ms style" and the other is the full output.
 			sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep="")); 
 			p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
 			sim.simulationFinished(); 
 		}
 }
 
-1000001 late(){
+1000001 late(){ // after 1000001, as long as the center mutation isn't lost (even if it hasn't reached a partial frequency) terminate the simulation
 	sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep="")); 
 	p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
 	sim.simulationFinished(); 
 }
 
-		
+// Custom mutationEffect() to ensure that the fitness of the adaptive fragment when all NUM_SITES loci are present on the same haplotype is S_TOG
 mutationEffect(m3) {
 	if (individual.genome2.countOfMutationsOfType(m4) > 1 & individual.genome2.countOfMutationsOfType(m3) >= NUM_SITES-1)
 		return (1 + S_TOG/NUM_SITES);
