@@ -1,0 +1,45 @@
+// Args: 
+// FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
+
+initialize() {
+	defineConstant("CHR_LENGTH", 10000); // size of the simulated chromosome, in bp
+	defineConstant("N1", 10000);
+	defineConstant("N2", 1000);
+	defineConstant("MUT_RATIO", 2.3); // for every 1 synonymous mutation there are 2.3 nonsynonymous mutations 
+	defineConstant("S_DEL", 0.001); // absolute value of selection coefficient of background deleterious variants
+	defineConstant("H_DEL", 0.5); // dominance coefficient for background deleterious variants
+	defineConstant("MU", 10^-(6)); // mutation rate for background delterious and neutral variants
+	defineConstant("RHO", 10^-(6)); // recombination rate
+   	defineConstant("SAMPLE", 100); // number of haplotypes pulled at the end of the simulation
+	
+	// create mutation types
+	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral
+	initializeMutationType("m2", H_DEL, "f", -S_DEL);  // deleterious mutations
+	
+	// Initialize genomic elements --> where can mutations go
+	initializeGenomicElementType("g1", c(m1, m2), c(1.0, MUT_RATIO)); // in the "g1" region, neutral and slightly deleterious mutations are possible
+	initializeGenomicElement(g1, 0, CHR_LENGTH); // no epistasis in the first half
+	
+	// initialize mutation and recombination rates
+	initializeRecombinationRate(RHO);
+	initializeMutationRate(MU);	
+}
+
+// First, run a burn in for BURN_IN=10*N generations before the contraction. This makes sure the population is at an equilibrium level of diversity
+1 early()
+{
+	// create population
+	sim.addSubpop("p1", N1); // pre contraction population size
+}
+
+// once the burn in is complete, do an instantaneous population size contraction
+100000 late() {	
+	p1.setSubpopulationSize(N2);
+}
+
+// after 20 generations, output sample
+100021 late() { 
+	sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep=""));
+	p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
+    sim.simulationFinished();
+}
