@@ -5,39 +5,39 @@ Code for the manuscript "The counteracting effects of hitchhiking and repulsion 
 ## simulations/
 Simulations were written using [SLiM 5](https://messerlab.org/slim/). Simulations were run on [hoffman2](https://www.hoffman2.idre.ucla.edu/About/System-overview.html), a Linux compute cluster.
 * [hitchhiking_basic_sim.txt](https://github.com/mweissman97/hitchhiking_repulsion_ld/blob/7b8e5472f4625886472a2ce7886f03fdc6c7846b/simulations/hitchhiking_basic_sim.txt): Primary, constant Ne model that simulates a partial sweep of a single, central adaptive locus. Used to generate data for figures: 1B-E, 2A-F, 3A-B, S1, S2, S3A-B, S4A-D.
-  * Arguments:
-   * S_BEN --> selection coefficient of beneficial variant, float. 
-   * S_DEL --> absolute value of selection coefficient of background deleterious variants, float
-   * RHO_EXP --> log10 recombination rate, can be a float or an integer
-   * MU_EXP --> log10 mutation rate for background delterious and neutral variants, can be a float or an integer
-   * THETA --> population scaled mutation rate for focal beneficial mutation, float
-   * H_DEL --> dominance coefficient for deleterious variants, float
-   * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1". This should not include the suffix, as SLiM will create multiple outputs with the same root name
+ * Arguments:
+    * S_BEN --> selection coefficient of beneficial variant, float. 
+    * S_DEL --> absolute value of selection coefficient of background deleterious variants, float
+    * RHO_EXP --> log10 recombination rate, can be a float or an integer
+    * MU_EXP --> log10 mutation rate for background delterious and neutral variants, can be a float or an integer
+    * THETA --> population scaled mutation rate for focal beneficial mutation, float
+    * H_DEL --> dominance coefficient for deleterious variants, float
+    * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1". This should not include the suffix, as SLiM will create multiple outputs with the same root name
   * Outputs:
-   * FILE_PATH.burnin.txt --> the results of SLiM's outputFull() after the burn-in, but before the sweep has begun
-   * FILE_PATH.burnin.ms --> the results of SLiM's outputMSSample() after the burn-in, but before the sweep has begun
-   * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
-   * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.burnin.txt --> the results of SLiM's outputFull() after the burn-in, but before the sweep has begun
+    * FILE_PATH.burnin.ms --> the results of SLiM's outputMSSample() after the burn-in, but before the sweep has begun
+    * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
 * [epistasis_introgression_sim.txt](https://github.com/mweissman97/hitchhiking_repulsion_ld/blob/7b8e5472f4625886472a2ce7886f03fdc6c7846b/simulations/epistasis_introgression_sim.txt): Simulates a selective sweep of a multi-locus adaptation adaptation that is introduced via introgression / horizontal gene transer. Used to generate data for figure: 5.
   * Arguments:
-   * MODEL --> an integer 1-4 that corresponds to the fitness interactions of mutations in the adaptive fragment
-   * NUM_SITES --> an integer that represents the number of interacting loci in the adaptive fragment. The paper uses 1 and 10.
-   * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
+    * MODEL --> an integer 1-4 that corresponds to the fitness interactions of mutations in the adaptive fragment
+    * NUM_SITES --> an integer that represents the number of interacting loci in the adaptive fragment. The paper uses 1 and 10.
+    * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
   * Outputs:
-   * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
-   * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
 * [longshallow.txt](https://github.com/mweissman97/hitchhiking_repulsion_ld/blob/7b8e5472f4625886472a2ce7886f03fdc6c7846b/simulations/longshallow.txt): Simulates a long, shallow demographic contraction where the population size is halved and the contraction proceeds for 5000 generations. Used to generate data for figure: S1
  * Arguments:
-  * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
+    * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
  * Outputs:
-   * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
-   * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
 * [sharpshort.txt](https://github.com/mweissman97/hitchhiking_repulsion_ld/blob/7b8e5472f4625886472a2ce7886f03fdc6c7846b/simulations/sharpshort.txt): Simulates a short, sharp demographic contraction where the population size is decreased to 0.1*N and the contraction proceeds for 20 generations. Used to generate data for figure: S1
  * Arguments:
-  * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
+    * FILE_PATH --> a string that specifies what to call the output files, ie "path/replicate_1.1"
  * Outputs:
-   * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
-   * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.txt --> the results of SLiM's outputFull() at the conclusion of the simulation, once the mutation has partially swept
+    * FILE_PATH.ms --> the results of SLiM's outputMSSample() at the conclusion of the simulation, once the mutation has partially swept
 
 ## sim_processing/
 Python and R files used to process simulation outputs.
