@@ -1,0 +1,71 @@
+// Keywords: gene interactions
+// Args: S_IND, S_TOG, RHO_EXP, CHR_LENGTH, H_DEL, H_BEN, FILE_PATH
+
+initialize() {
+	// defineConstant("S_TOG", 0.1);
+	// defineConstant("RHO_EXP", 6);
+	// defineConstant("CHR_LENGTH", 1000);
+	// defineConstant("EP_DIST", 100);
+
+
+	defineConstant("N1", 10000);
+	defineConstant("N2", 1000);
+	// defineConstant("THETA", 5);
+	defineConstant("MUT_RATIO", 2.3);
+	// defineConstant("S_DEL", 0.001);
+	defineConstant("MU_BEN", THETA/(4*N1));
+	defineConstant("MU", 10^-(MU_EXP));
+   	defineConstant("SAMPLE", 100);
+	defineConstant("RHO", 10^-(RHO_EXP));
+	
+	// create mutation types
+	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral
+	initializeMutationType("m2", H_DEL, "f", -S_DEL);  // deleterious mutations
+	initializeMutationType("m3", H_BEN, "f", S_TOG);  // epistatic mutation A
+	m3.convertToSubstitution = F;
+	
+	// back mutation stacking
+	c(m1,m3).mutationStackGroup = 1;
+	c(m1,m3).mutationStackPolicy = 'l';
+	
+	
+	// Initialize genomic elements --> where can mutations go
+	initializeGenomicElementType("g1", c(m1, m2), c(1.0, MUT_RATIO)); // in the "g1" region, neutral and slightly deleterious mutations are possible, but epistasis isn't
+	initializeGenomicElementType("g2", c(m1, m3), c(1.0, MUT_RATIO));    // epistatic variant A
+	
+	initializeGenomicElement(g1, 0, asInteger(CHR_LENGTH/2-1)); // no epistasis in the first half
+	initializeGenomicElement(g2, asInteger(CHR_LENGTH/2), asInteger(CHR_LENGTH/2)); // first epistatic variant
+	initializeGenomicElement(g1, asInteger(CHR_LENGTH/2+1), CHR_LENGTH); // no epistasis in the remainder
+	
+	// initialize mutation and recombination rates
+	initializeRecombinationRate(RHO);
+	initializeMutationRate(c(MU, MU_BEN, MU), c(asInteger(CHR_LENGTH/2-1), asInteger(CHR_LENGTH/2), CHR_LENGTH));	
+}
+
+// benficial mutations only happen after burn-in
+mutation(m3) {
+	return ifelse(sim.tag==1, T, F);
+}
+
+// First, run a burn in for BURN_IN=10*N generations, where no epistatic mutations occur. This makes sure the population is at an equilibrium level of diversity
+1 early()
+{
+	// initialize a tag to indicate whether beneficial mutations should be introduced 
+	sim.tag=0;
+	
+	// create population
+	sim.addSubpop("p1", N1);
+}
+
+// once the burn in is complete, start introducing epistatic mutations
+100000 late() {	
+	sim.tag = 1;
+	p1.setSubpopulationSize(N2);
+}
+
+
+100021 late() { 
+	sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep=""));
+	p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
+        sim.simulationFinished();
+}

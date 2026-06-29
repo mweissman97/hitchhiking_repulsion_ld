@@ -1,0 +1,178 @@
+// Keywords: gene interactions
+// Args: S_IND, S_TOG, RHO_EXP, CHR_LENGTH, EP_DIST, FILE_PATH
+
+initialize() {
+	//defineConstant("S_TOG", 0.1);
+	//defineConstant("MEAN_EP_DIST", 100);
+	//defineConstant("NUM_SITES", 10);
+	defineConstant("S_DEL", 0.001);
+	//defineConstant("X0_COUNT", 5);
+	//defineConstant("MODEL", "mag");
+
+	
+	if (MODEL == 1){ // magnitude
+		defineConstant("S_IND", S_TOG/NUM_SITES * 0.4); 
+		defineConstant("S_IND_1", S_TOG/NUM_SITES * 0.4); }
+	else if (MODEL == 2){ //additive
+		defineConstant("S_IND", S_TOG/NUM_SITES); 
+		defineConstant("S_IND_1", S_TOG/NUM_SITES);}
+	else if (MODEL == 3){ // sign
+		defineConstant("S_IND", -S_DEL); 
+		defineConstant("S_IND_1", -S_DEL); }
+	else if (MODEL == 4){ //hitch
+		defineConstant("S_IND", -S_DEL); 
+		defineConstant("S_IND_1", S_TOG-(S_DEL*NUM_SITES)); }
+	
+	//defineConstant("CHR_LENGTH", 10000);
+	//defineConstant("N", 1000);
+	//defineConstant("THETA", 0);
+	
+	defineConstant("LOG_MAX_EP_DIST", log10(1000/(NUM_SITES)));
+	defineConstant("MID_EP_DIST", 10^((LOG_MAX_EP_DIST+0)/2));
+	
+	defineConstant("RHO_EXP", 6);
+	defineConstant("MUT_RATIO", 2.3);
+	defineConstant("MU_BEN", THETA/(4*N));
+	defineConstant("MU", 1e-6);
+        defineConstant("SAMPLE", 100);
+	defineConstant("RHO", 10^-(RHO_EXP));
+	
+	// create mutation types
+	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral
+	initializeMutationType("m2", 0.5, "f", -S_DEL);  // deleterious mutations
+	initializeMutationType("m3", 0.5, "f", S_IND);  // epistatic mutations
+	m3.convertToSubstitution = F;
+	initializeMutationType("m4", 0.5, "f", S_IND_1);  // epistatic mutations
+	m4.convertToSubstitution = F;
+	
+	// back mutation stacking
+	c(m1,m3).mutationStackGroup = 1;
+	c(m1,m3).mutationStackPolicy = 'l';
+	c(m1,m4).mutationStackGroup = 1;
+	c(m1,m4).mutationStackPolicy = 'l';
+	
+
+	// Initialize genomic elements --> where can mutations go
+	initializeGenomicElementType("g1", c(m1, m2), c(1.0, MUT_RATIO)); // in the "g1" region, neutral and slightly deleterious mutations are possible, but epistasis isn't
+	initializeGenomicElementType("g2", c(m1, m3), c(1.0, MUT_RATIO));    // epistatic variants and hitchhikers
+	initializeGenomicElementType("g3", c(m1, m4), c(1.0, MUT_RATIO));    // the middle / focal epistatic variant
+	
+	// create genomic elements
+	end_loc = asInteger(CHR_LENGTH/2-MID_EP_DIST*NUM_SITES/2);
+	initializeGenomicElement(g1, 0, end_loc-1); // no epistasis in the first half
+	MUT_RATE_VEC = c(MU);
+	MUT_RATE_BREAKS = c(asInteger(end_loc-1));
+	EP_LOC_VEC = c();
+	for (i in 1:NUM_SITES){
+		MUT_RATE_BREAKS = c(MUT_RATE_BREAKS, asInteger(end_loc));
+		if (i == ceil(NUM_SITES/2)){
+			initializeGenomicElement(g3, asInteger(end_loc), asInteger(end_loc));
+			defineConstant("FOCAL_EP_LOC", asInteger(end_loc)); }
+		else {
+			initializeGenomicElement(g2, end_loc, end_loc);
+			EP_LOC_VEC = c(EP_LOC_VEC, asInteger(end_loc));
+		}
+		//draw spacing from rpois
+		//SEP_SPACE = rpois(1, MEAN_EP_DIST);
+		SEP_SPACE_LOG = runif(1, 0, LOG_MAX_EP_DIST);
+		SEP_SPACE = asInteger(10^SEP_SPACE_LOG);
+                if (SEP_SPACE == 0){
+			initializeGenomicElement(g1, end_loc+1, end_loc+1);
+			end_loc = end_loc+2;
+		} else {
+			initializeGenomicElement(g1, end_loc+1, end_loc+SEP_SPACE);
+			end_loc = end_loc+SEP_SPACE+1;
+		}
+		MUT_RATE_BREAKS = c(MUT_RATE_BREAKS, asInteger(end_loc-1));
+		MUT_RATE_VEC = c(MUT_RATE_VEC, MU_BEN, MU);
+	}
+	initializeGenomicElement(g1, end_loc+1, CHR_LENGTH);
+	MUT_RATE_BREAKS = c(MUT_RATE_BREAKS, CHR_LENGTH);
+	MUT_RATE_VEC = c(MUT_RATE_VEC, MU);
+	
+	defineConstant("EP_LOCS", EP_LOC_VEC);
+	// initialize mutation and recombination rates
+	initializeRecombinationRate(RHO);
+	initializeMutationRate(MUT_RATE_VEC, MUT_RATE_BREAKS);	
+}
+
+// epistatic mutations only happen after burn-in
+mutation(m3) {
+	return ifelse(sim.tag==1, T, F);
+}
+
+mutation(m4) {
+	return ifelse(sim.tag==1, T, F);
+}
+
+// First, run a burn in for BURN_IN=10*N generations, where no epistatic mutations occur. This makes sure the population is at an equilibrium level of diversity
+1 early()
+{
+	// initialize a tag to indicate whether beneficial mutations should be introduced 
+	sim.tag = 0;
+	
+	// create population
+	sim.addSubpop("p1", N);
+	
+	defineConstant("simID", getSeed());
+}
+
+// once the burn in is complete, introduce adaptive haplotype
+100000 late() {	
+	sim.outputFull(tempdir() + "slim_" + simID + ".txt");
+	
+    // seed adaptation in a single individual
+   target = sample(p1.genomes, X0_COUNT);
+   target.addNewDrawnMutation(m4, FOCAL_EP_LOC);
+   if (NUM_SITES > 1){
+	target.addNewDrawnMutation(m3, EP_LOCS);
+   }
+   sim.tag = 1;
+}
+
+
+100001:1000000 late() { 
+		//m4_freq = sum(sim.mutationFrequencies(NULL, sim.mutationsOfType(m4)));
+		m4_muts = sim.mutationsOfType(m4);
+		if (size(m4_muts) == 0) { //if focal mutation is lost, go back to the start of the burn-in
+			sim.readFromPopulationFile(tempdir() + "slim_" + simID + ".txt");
+			setSeed(rdunif(1, 0, asInteger(2^62) - 1));
+			
+			// reseed adaptive mutation
+			target = sample(p1.genomes, X0_COUNT);
+   		target.addNewDrawnMutation(m4, FOCAL_EP_LOC);
+		if (NUM_SITES > 1){
+        		target.addNewDrawnMutation(m3, EP_LOCS);
+   		}
+			sim.tag = 1;
+		} else if (sum(sim.mutationFrequencies(NULL, sim.mutationsOfType(m4))) > 0.5){
+			sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep="")); 
+			p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
+			sim.simulationFinished(); 
+		}
+}
+
+1000001 late(){
+	sim.outputFull(filePath = paste(FILE_PATH, ".txt", sep="")); 
+	p1.outputMSSample(sampleSize = SAMPLE, filePath = paste(FILE_PATH, ".ms", sep=""));
+	sim.simulationFinished(); 
+}
+
+		
+mutationEffect(m3) {
+	if (individual.genome2.countOfMutationsOfType(m4) > 1 & individual.genome2.countOfMutationsOfType(m3) >= NUM_SITES-1)
+		return (1 + S_TOG/NUM_SITES);
+	else if (individual.genome1.countOfMutationsOfType(m4) > 1 & individual.genome1.countOfMutationsOfType(m3) >= NUM_SITES-1)
+		return (1 + S_TOG/NUM_SITES);
+	else
+		return effect;
+}
+
+mutationEffect(m4) {
+	if (individual.genome2.countOfMutationsOfType(m3) >= NUM_SITES-1)
+		return (1 + S_TOG/NUM_SITES);
+	else if (individual.genome1.countOfMutationsOfType(m3) >= NUM_SITES-1)
+		return (1 + S_TOG/NUM_SITES);
+	else
+		return effect;
+}
