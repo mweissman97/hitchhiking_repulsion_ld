@@ -3,7 +3,7 @@ Code for the manuscript "The counteracting effects of hitchhiking and repulsion 
 
 # File Directory
 ## simulations/
-Simulations were written using [SLiM 5](https://messerlab.org/slim/). Simulations were run on [hoffman2](https://www.hoffman2.idre.ucla.edu/About/System-overview.html), a Linux compute cluster.
+Simulations were written using [SLiM 4]([https://messerlab.org/slim/](https://www.journals.uchicago.edu/doi/10.1086/723601?__cf_chl_f_tk=f1IcuQK8F2UzTzjpkZifidwsr5MgAmy3uZmmbfgvJHA-1782863354-1.0.1.1-yryJ4SmSgxPEfLUbhizaPaTbJFCCU265agQZjlOsF9M)). Simulations were run on [hoffman2](https://www.hoffman2.idre.ucla.edu/About/System-overview.html), a Linux compute cluster.
 * [hitchhiking_basic_sim.txt](https://github.com/mweissman97/hitchhiking_repulsion_ld/blob/7b8e5472f4625886472a2ce7886f03fdc6c7846b/simulations/hitchhiking_basic_sim.txt): Primary, constant Ne model that simulates a partial sweep of a single, central adaptive locus. Used to generate data for figures: 1B-E, 2A-F, 3A-B, S1, S2, S3A-B, S4A-D.
   * Arguments:
      * S_BEN --> selection coefficient of beneficial variant, float. 
