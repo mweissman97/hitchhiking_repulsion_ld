@@ -1,3 +1,4 @@
+# This file takes the SLiM outputs of the full output and the MS style to create a csv where each snp is annotated as synonymous or nonsynonymous
 # Import necessary libraries
 import pandas as pd  # For data manipulation and analysis
 import numpy as np  # For numerical operations
@@ -232,22 +233,3 @@ if __name__ == "__main__":
     df = read_haplotype(file_path, G)
     #print(df.head())
     df.to_csv(f"{file_path}_raw.csv")
-    '''
-    # Compute the LD matrix
-    cor_long_upper = compute_ld_matrix(df)
-    print(cor_long_upper.head())
-
-    # Pull out metadata from df
-    df_meta = pd.DataFrame({
-        "site_pos": df.index.get_level_values("site_pos"),  # Extract site positions from the index
-        "site_type": df.index.get_level_values("site_type"),  # Extract site types from the index
-        "site_freq": df.mean(axis=1)  # Calculate site frequencies as the mean across rows
-    })   
-    df_meta = df_meta.reset_index(drop=True)
-    
-    # Construct return matrix
-    df_out = add_meta_to_ld(cor_long_upper, df_meta, repNum)
-    
-    # Save the processed haplotype data to a compressed file
-    df_out.to_csv(f"{file_path}.csv")
-    '''
