@@ -1,3 +1,7 @@
+# To run from command line
+# Rscript --vanilla sim_processing/pairwise_ld.R $path/haplotype_file.csv
+
+#load libraries
 library(tidyr)
 library(dplyr)
 library(stringr)
@@ -18,16 +22,12 @@ df <- df %>%
 
 df <- subset(df, allele_freq!=1.0 & allele_freq!=0.01)
 
-foc_freq <- df$allele_freq[df$site_pos == 5000]
-fix <- ifelse(length(foc_freq)==0, "none",
-	ifelse(foc_freq > 0.35, "fix", "low_freq"))
-
 df$afreq_bin <- ifelse(df$allele_freq >= 0.2 & df$allele_freq <= 0.8,
                        "common",
                        ifelse(df$allele_freq <= 0.05 | df$allele_freq >= 0.95,
                               "rare",
                               "int"))
-
+# function to calculate D
 d_ld_calc <- function(loc_row1, loc_row2){
   # d = pab - pa * pb
   pab <- sum(loc_row1 == loc_row2 & loc_row1 == 1)/length(loc_row1)
@@ -97,7 +97,6 @@ for (mut in mut_types){
 
 # get rid of any NA values
 linkage_df <- na.omit(linkage_df)
-linkage_df$fix <- fix
 
 # write output to csv
 write.csv(linkage_df, paste(filename, "_pairwise", ".csv", sep = ""))
