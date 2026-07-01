@@ -217,7 +217,6 @@ if __name__ == "__main__":
     
     # Define command-line arguments
     parser.add_argument('--file_path', help="", type=str)
-    parser.add_argument('--repNum', help="", type=str, default="1")
     parser.add_argument('--G', help="", type=int, default=1e4)    
     
     # Parse command-line arguments
@@ -226,8 +225,7 @@ if __name__ == "__main__":
     file_path = os.path.expandvars(args.file_path)  # expand any $VAR
     file_path = os.path.expanduser(file_path)      # expand ~
     file_path = os.path.abspath(file_path)         # absolute path
-    repNum = args.repNum
-    G = args.G
+    G = 10000
     
     # Read and process haplotype data
     df = read_haplotype(file_path, G)
