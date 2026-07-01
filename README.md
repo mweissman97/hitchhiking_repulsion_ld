@@ -3,7 +3,9 @@ This repository contains code for the manuscript "The counteracting effects of h
 ```simulations```: contains the [SLiM 4]([https://messerlab.org/slim/](https://www.journals.uchicago.edu/doi/10.1086/723601?__cf_chl_f_tk=f1IcuQK8F2UzTzjpkZifidwsr5MgAmy3uZmmbfgvJHA-1782863354-1.0.1.1-yryJ4SmSgxPEfLUbhizaPaTbJFCCU265agQZjlOsF9M)) simulation scripts.
 * ```sim_processing```: contains R and Python scripts used to convert SLiM 4 outputs into haplotype csv files and then measure linkage disequilibrium.
 * ```make_sim_figures```: contains the csv files created through ```simulations``` and ```sim_processing``` and associated R files to recreate all simulation based figures in the paper
-* ```c_diff```: contains the *Clostridium difficile* haplotype csv, results of the [iLDS](https://github.com/garudlab/iLDS) scan, and R scripts needed to create figures related to the *Clostridium difficile* analysis (Fig. 4, Supplemental Fig. 4)  
+* ```c_diff```: contains the *Clostridium difficile* haplotype csv, results of the [iLDS](https://github.com/garudlab/iLDS) scan, and R scripts needed to create figures related to the *Clostridium difficile* analysis (Fig. 4, Supplemental Fig. 4)
+
+In the main directory, the file ```example_hitchhiking_basic_pipeline.sh``` demonstrates the steps to run and process simulations.
 
 # File Directory
 ## simulations/
