@@ -34,7 +34,7 @@ ggsave("cdiff_ilds.png", ildsplot, width = 12, height = 8, units = "in")
 
 ##### Make rN - rS graphs, 4B-C and S4
 # Read in full haplotype csv to calculate pairwise LD
-df <- read.delim("C_diff.txt", sep = ",")
+df <- read.delim("c_diff.txt", sep = ",")
 max_c <- ncol(df) # index for last haplotype column, as we'll add more later
 
 # Calculate allele frequency, since we only care about common variants
