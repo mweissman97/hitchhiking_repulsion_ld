@@ -89,7 +89,7 @@ def calculate_pi_in_windows(hap_data: pd.DataFrame, window_size: int = 1000, ste
 
 def main():
 
-    input_file = "/u/project/ngarud/Garud_lab/HMP_haplos_proc/haplotypes/Ruminococcus_bromii_62047/FP929051_haplotypes.csv"
+    input_file = "c_diff.txt"
 
     if not os.path.exists(input_file):
         raise FileNotFoundError("C_diff.txt not found in current directory")
@@ -110,8 +110,8 @@ def main():
         hap_data, window_size=window_size, step=step
     )
 
-    pi_windows.to_csv("R_bromii_pi_windows.tsv", sep="\t", index=False)
-    sliding_windows.to_csv("R_bromii_sliding_windows.tsv", sep="\t", index=False)
+    pi_windows.to_csv("C_diff_pi_windows.tsv", sep="\t", index=False)
+    sliding_windows.to_csv("C_diff_pi_windows.tsv", sep="\t", index=False)
 
     print("Finished!")
 
