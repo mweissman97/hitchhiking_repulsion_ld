@@ -1,3 +1,4 @@
+# Makes figure 1, supplemental figure 2
 # Load modules
 library(tidyverse)
 library(viridis)
@@ -114,3 +115,48 @@ f1e <- ggplot(data = subset(global_df_wide, allele_freq == "common" & s_ben == 0
   theme(legend.position = "inside",
         legend.position.inside = c(0.9, 0.2))
 ggsave("f1e_sweep_delta.png", f1e, width = 6, height = 5, units = "in")
+
+#### Supplemental Figure 2: coarse distance bins erase evidence of switching
+coarsest_bins <- c(150, 300, 1000, 2000, 3000, 4000, 5000, 7500, 10000)
+global_ld_df$coarse_bin <- coarsest_bins[ findInterval(global_ld_df$dist_bin, coarsest_bins, rightmost.closed = TRUE) + 1 ]
+long_df_coarsest <- global_ld_df %>%
+  group_by(site_type, allele_freq, s_ben, theta, s_del, rho_exp, mu_exp, h_ben, h_del, coarse_bin) %>%
+  summarise(
+    mean_r2_weighted = sum(mean_r2 * num_pairs) / sum(num_pairs),
+    total_pairs      = sum(num_pairs),
+    .groups = "drop"
+  )
+
+coarse_wide <- pivot_wider(long_df_coarsest, 
+                              id_cols = c(allele_freq, coarse_bin, s_ben, theta, s_del, rho_exp, mu_exp, h_ben, h_del), 
+                              names_from = site_type, 
+                              values_from = mean_r2_weighted,
+                              values_fn = mean)
+coarse_wide$delta_r2 <- coarse_wide$nonsyn - coarse_wide$syn
+coarse_wide$bin_type <- "coarse"
+global_df_wide$bin_type <- "fine"
+coarse_v_fine <- rbind(global_df_wide, coarse_wide)
+
+coarse <- ggplot(data = subset(coarse_v_fine, allele_freq == "common" & s_ben == 0.05 & s_del == 0.001)) +
+  geom_hline(yintercept = 0,
+             color = "grey") +
+  geom_line(aes(x = coarse_bin, 
+                y = delta_r2,
+                color = bin_type),
+            linewidth = 1,
+            linetype = "dashed") +
+  geom_point(aes(x = coarse_bin, 
+                y = delta_r2,
+                color = bin_type),
+             size = 2) +
+  scale_color_manual(values = c("#f98e09", "#57106e"),
+                     name = "Distance Bin") +
+  scale_x_continuous(trans = "log10") +
+  theme_bw() +
+  ylab(expression(rN^2~-~rS^2)) +
+  xlab("Distance between variants (bp)") +
+  coord_cartesian(ylim = c(-0.2, 0.2)) +
+  theme(panel.grid = element_blank(),
+        text = element_text(size = 18),
+        strip.background = element_blank(), strip.text = element_blank()); coarse
+ggsave("coarse_v_fine.png", coarse, width = 6, height = 5, units = "in")
