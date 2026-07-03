@@ -28,6 +28,10 @@ Simulations were written using [SLiM 4]([https://messerlab.org/slim/](https://ww
 * [epistasis_introgression_sim.txt](https://github.com/mweissman97/hitchhiking_repulsion_ld/blob/7b8e5472f4625886472a2ce7886f03fdc6c7846b/simulations/epistasis_introgression_sim.txt): Simulates a selective sweep of a multi-locus adaptation adaptation that is introduced via introgression / horizontal gene transer. Used to generate data for figure: 5.
   * Arguments:
      * MODEL: an integer 1-4 that corresponds to the fitness interactions of mutations in the adaptive fragment
+       * 1: magnitude epistasis, each site is more weakly beneficial alone than in additive model (s_a = s_t/n_loc * 0.4)
+       * 2: additive, each site is beneficial alone proportional to the the number of sites in the fragment (s_a = s_t/n_loc)
+       * 3: sign epistasis, each site is deleterious alone (s_a = s_del)
+       * 4: hitchhiking additive, the centermost mutation is beneficial (s_a_b = s_t - s_a_d * (1-n_loc)) and the remaining mutations are deleterious hitchhikers (s_a_d = s_del)
      * NUM_SITES: an integer that represents the number of interacting loci in the adaptive fragment. The paper uses 1 and 10.
      * FILE_PATH: a string that specifies what to call the output files, ie "path/replicate_1.1"
   * Outputs:
