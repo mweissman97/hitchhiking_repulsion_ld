@@ -35,7 +35,7 @@ sben_plot <- ggplot(data = subset(df_wide,
         text = element_text(size = 18),
         strip.background = element_blank(), strip.text = element_blank(),
         aspect.ratio = 1); sben_plot
-ggsave("120_sben.png", sben_plot, width = 6, height = 5, units = "in")
+ggsave("plot_sben.png", sben_plot, width = 6, height = 5, units = "in")
 
 # B) deleterious selection coefficient (s_del)
 sd_plot <- ggplot(data = subset(df_wide, 
@@ -61,7 +61,7 @@ sd_plot <- ggplot(data = subset(df_wide,
         text = element_text(size = 18),
         strip.background = element_blank(), strip.text = element_blank(),
         aspect.ratio = 1); sd_plot
-ggsave("120_sdel.png", sd_plot, width = 6, height = 5, units = "in")
+ggsave("plot_sdel.png", sd_plot, width = 6, height = 5, units = "in")
 
 # C) background mutation rate (mu)
 mu_plot <- ggplot(data = subset(df_wide, 
@@ -88,7 +88,7 @@ mu_plot <- ggplot(data = subset(df_wide,
         text = element_text(size = 18),
         strip.background = element_blank(), strip.text = element_blank(),
         aspect.ratio = 1); mu_plot
-ggsave("120_mutrate.png", mu_plot, width = 6, height = 5, units = "in")
+ggsave("plot_mutrate.png", mu_plot, width = 6, height = 5, units = "in")
 
 # D) recombination rate (rho)
 rho_plot <- ggplot(data = subset(df_wide, 
@@ -115,7 +115,7 @@ rho_plot <- ggplot(data = subset(df_wide,
         text = element_text(size = 18),
         strip.background = element_blank(), strip.text = element_blank(),
         aspect.ratio = 1); rho_plot
-ggsave("120_recomb.png", rho_plot, width = 6, height = 5, units = "in")
+ggsave("plot_recomb.png", rho_plot, width = 6, height = 5, units = "in")
 
 # E) dominance coefficient (h)
 hplot <- ggplot(data = subset(df_wide, 
@@ -141,7 +141,7 @@ hplot <- ggplot(data = subset(df_wide,
         panel.grid.major = element_blank(),
         strip.background = element_blank(), strip.text = element_blank(),
         aspect.ratio = 1); hplot
-ggsave("120_dominance.png", hplot, width = 6, height = 5, units = "in")
+ggsave("plot_dominance.png", hplot, width = 6, height = 5, units = "in")
 
 # F) beneficial mutation rate (theta)
 type <- ggplot(data = subset(df_wide, 
@@ -166,4 +166,4 @@ type <- ggplot(data = subset(df_wide,
         text = element_text(size = 18),
         strip.background = element_blank(), strip.text = element_blank(),
         aspect.ratio = 1); type
-ggsave("120_sweeptype.png", type, width = 6, height = 5, units = "in")
+ggsave("plot_sweeptype.png", type, width = 6, height = 5, units = "in")
