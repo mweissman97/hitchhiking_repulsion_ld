@@ -2,7 +2,7 @@ library(tidyverse)
 library(viridis)
 
 # read in csv
-df <- read.csv("all_parameter_space.csv")
+df <- read.csv("paramspace_ld.csv")
 
 # create a wide data frame to calculate rN-rS
 df_wide <- pivot_wider(df, 
@@ -135,7 +135,7 @@ hplot <- ggplot(data = subset(df_wide,
   xlab("Distance between variants (bp)") +
   ylab(expression(rN^2~-~rS^2)) +
   scale_x_continuous(trans = "log10") +
-  coord_cartesian(ylim = c(-0.04, 0.02)) +
+  coord_cartesian(ylim = c(-0.2, 0.2)) +
   theme(panel.grid.minor = element_blank(),
         text = element_text(size = 18),
         panel.grid.major = element_blank(),
