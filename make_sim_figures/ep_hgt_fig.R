@@ -53,3 +53,31 @@ epfig <- ggplot(data = subset(simplified_df,
   ylab(expression(rN^2~-~rS^2)) +
   coord_cartesian(ylim = c(-0.15, 0.15))
 ggsave("ep_introgression.png", epfig, width = 6, height = 4, units = "in")
+
+
+num_site_plot <- ggplot(data = subset(wide_df, 
+                     allele_freq == "common" & model != 1 & model != 2)) +
+  geom_hline(yintercept = 0) +
+  geom_line(aes(x = coarse_dist_bin, 
+                y = delta_r2, 
+                color = as.factor(num_sites), 
+                linetype = as.factor(num_sites)), 
+            linewidth = 1) +
+  scale_color_manual(values = c("10" = "#420a68", 
+                                "2" = "#dd513a",
+                                "1" = "#fca50a"), 
+                     name = "Number of Loci") +
+  scale_linetype_manual(values = c("10" = 1, "2" = 2,"1" = 4), name = "Number of Loci") +
+  theme_bw() +
+  scale_x_log10() +
+  theme(text = element_text(size = 18),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        strip.background = element_blank(), strip.text = element_blank(),
+  ) +
+  xlab("Distance between variants (bp)") +
+  ylab(expression(rN^2~-~rS^2)) +
+  coord_cartesian(ylim = c(-0.15, 0.15)) +
+  facet_wrap(~model) 
+ggsave("num_site_plot.png", num_site_plot, width = 7.5, height = 4, units = "in")
+
