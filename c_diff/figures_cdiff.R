@@ -40,7 +40,9 @@ max_c <- ncol(df) # index for last haplotype column, as we'll add more later
 # Calculate allele frequency, since we only care about common variants
 df <- df %>%
   rowwise() %>%
-  mutate(allele_freq = mean(c_across(GUT_GENOME142279:GUT_GENOME142432)))
+  mutate(allele_freq = mean(c_across(GUT_GENOME142279:GUT_GENOME142432)),
+                  na_frac = sum(is.na(c_across(GUT_GENOME142279:GUT_GENOME142432)))/135)
+
 df_common <- subset(df, allele_freq >= 0.2 & site_type != "NC")
 
 mut_types <- c("nonsyn", "syn")
@@ -284,7 +286,7 @@ get_haplotype_clusters <- function(raw_haps){
 
 # Pilz domain, Fig 4E
 ben_loc <- c_diff_sweep_centers[5]
-pilz_df <- subset(df_common, site_pos >= (ben_loc-haplo_dist) & site_pos <= (ben_loc+haplo_dist))
+pilz_df <- subset(df, na_frac <= 0.05 & site_pos >= (ben_loc-haplo_dist) & site_pos <= (ben_loc+haplo_dist))
 
 pilz_long <- pivot_longer(pilz_df, cols = GUT_GENOME142279:GUT_GENOME142432,
                            names_to = "sample", values_to = "state")
@@ -322,8 +324,7 @@ ggsave("cdiff_haplo_sweep1.png", haplo_pilz_plot, width = 5, height = 4, units =
 
 # S-layer cassette, Fig 4F
 s_ben_loc <- c_diff_sweep_centers[6]
-s_df <- subset(df_common, site_pos >= (ben_loc-haplo_dist) & site_pos <= (ben_loc+haplo_dist))
-
+s_df <- subset(df, na_frac <= 0.05 & site_pos >= (s_ben_loc-haplo_dist) & site_pos <= (s_ben_loc+haplo_dist))
 s_long <- pivot_longer(s_df, cols = GUT_GENOME142279:GUT_GENOME142432,
                            names_to = "sample", values_to = "state")
 
