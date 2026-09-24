@@ -2,7 +2,7 @@ library(tidyverse)
 library(viridis)
 
 # part 1: repulsion vs. hitchhiking as a function of distance to beneficial variant
-df <- read.csv("/Users/mayaweissman/Documents/GitHub/GarudPostdoc/params_0.05.0.001.0.01.6.6.0.5.0.5.0.5_all_pairs.csv")
+df <- read.csv("params_0.05.0.001.0.01.6.6.0.5.0.5.0.5_all_pairs.csv")
 df_common <- subset(df, afreq_bin == "common")
 
 df_common$dist_ben_1 <- abs(df_common$snp1 - 5000)
